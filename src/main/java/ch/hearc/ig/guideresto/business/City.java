@@ -24,7 +24,26 @@ public class City {
         return cityName;
     }
 
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
     public Set<Restaurant> getRestaurants() {
         return restaurants;
     }
+
+    @Override
+    public String toString() {
+        return "City{" +
+                "id=" + id +
+                ", zipCode='" + zipCode + '\'' +
+                ", cityName='" + cityName + '\'' +
+                ", restaurants=" + restaurants +
+                '}';
+    }
+
 }
