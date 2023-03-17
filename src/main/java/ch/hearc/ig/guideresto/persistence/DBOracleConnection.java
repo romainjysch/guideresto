@@ -19,10 +19,10 @@ public class DBOracleConnection {
             cnn.setAutoCommit(false);
             // Niveau d'isolation de JDBC :
             // Niveau d'isolation déterminé par une constante de l'interface Connection :
-            //cnn.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
+            cnn.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
             return cnn;
         } catch (SQLException e) {
-            throw new SQLException();
+            throw new SQLException(e);
         }
     }
 
@@ -30,7 +30,7 @@ public class DBOracleConnection {
         try {
             cnn.commit();
         } catch (SQLException e) {
-            throw new SQLException();
+            throw new SQLException(e);
         }
     }
 
@@ -38,7 +38,7 @@ public class DBOracleConnection {
         try {
             cnn.close();
         } catch (SQLException e) {
-            throw new SQLException();
+            throw new SQLException(e);
         }
     }
 
