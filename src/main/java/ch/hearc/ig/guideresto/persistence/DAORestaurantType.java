@@ -23,6 +23,7 @@ public class DAORestaurantType {
                         resultSet.getString("LIBELLE"),
                         resultSet.getString("DESCRIPTION")));
             }
+            resultSet.close();
             return restaurantTypes;
         } catch(SQLException e) {
             throw new RuntimeException(e);
@@ -39,6 +40,7 @@ public class DAORestaurantType {
             while (resultSet.next()) {
                 restaurantType = new RestaurantType(resultSet.getInt("numero"), resultSet.getString("libelle"), resultSet.getString("description"));
             }
+            resultSet.close();
             return restaurantType;
         } catch(SQLException e) {
             throw new RuntimeException(e);

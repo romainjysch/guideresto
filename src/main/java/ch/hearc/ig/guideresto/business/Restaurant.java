@@ -23,6 +23,14 @@ public class Restaurant {
         this.type = type;
     }
 
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
     public String getName() {
         return name;
     }
@@ -73,6 +81,14 @@ public class Restaurant {
 
     public void setType(RestaurantType type) {
         this.type = type;
+    }
+
+    public void setEvaluations(Set<Evaluation> evaluations) {
+        this.evaluations = evaluations;
+    }
+
+    public void setAddress(Localisation address) {
+        this.address = address;
     }
 
     @Override

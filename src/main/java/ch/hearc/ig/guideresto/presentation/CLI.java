@@ -11,9 +11,7 @@ import ch.hearc.ig.guideresto.business.EvaluationCriteria;
 import ch.hearc.ig.guideresto.business.Grade;
 import ch.hearc.ig.guideresto.business.Restaurant;
 import ch.hearc.ig.guideresto.business.RestaurantType;
-import ch.hearc.ig.guideresto.persistence.DAOCity;
-import ch.hearc.ig.guideresto.persistence.DAORestaurant;
-import ch.hearc.ig.guideresto.persistence.DAORestaurantType;
+import ch.hearc.ig.guideresto.persistence.*;
 import ch.hearc.ig.guideresto.persistence.FakeItems;
 
 import java.io.PrintStream;
@@ -30,7 +28,6 @@ public class CLI {
   private final Scanner scanner;
   private final PrintStream printStream;
   private final FakeItems fakeItems;
-  private DAORestaurant daoRestaurant;
 
   // Injection de dépendances
   public CLI(Scanner scanner, PrintStream printStream, FakeItems fakeItems) {
@@ -109,7 +106,6 @@ public class CLI {
     println("Liste des restaurants : ");
 
     Set<Restaurant> restaurants = DAORestaurant.findAll();
-    //Set<Restaurant> restaurants = fakeItems.getAllRestaurants();
 
     Optional<Restaurant> maybeRestaurant = pickRestaurant(restaurants);
     // Si l'utilisateur a choisi un restaurant, on l'affiche, sinon on ne fait rien et l'application va réafficher le menu principal
@@ -121,9 +117,7 @@ public class CLI {
     String research = readString();
 
     Set<Restaurant> restaurants = DAORestaurant.findAll()
-        .stream()
-        .filter(r -> r.getName().equalsIgnoreCase(research))
-        .collect(toUnmodifiableSet());
+        .stream().filter(r -> r.getName().toLowerCase().contains(research.toLowerCase())).collect(toUnmodifiableSet());
 
     Optional<Restaurant> maybeRestaurant = pickRestaurant(restaurants);
     maybeRestaurant.ifPresent(this::showRestaurant);
@@ -160,8 +154,9 @@ public class CLI {
       String zipCode = readString();
       println("Veuillez entrer le nom de la nouvelle ville : ");
       String cityName = readString();
-      City city = new City(1, zipCode, cityName);
-      fakeItems.getCities().add(city);
+      City city = new City(null, zipCode, cityName);
+      DAOCity.insert(city);
+      city.setId(DAOCity.findByZipAndName(city)); // Récupérer la PK qui a été attribuée en DB
       return city;
     }
 
@@ -223,7 +218,7 @@ public class CLI {
         restaurantType);
     city.getRestaurants().add(restaurant);
     restaurant.getAddress().setCity(city);
-    DAORestaurant.findAll().add(restaurant);
+
     DAORestaurant.insert(restaurant);
 
     showRestaurant(restaurant);
@@ -318,6 +313,7 @@ public class CLI {
   private void addBasicEvaluation(Restaurant restaurant, Boolean like) {
     BasicEvaluation eval = new BasicEvaluation(null, LocalDate.now(), restaurant, like, getIpAddress());
     restaurant.getEvaluations().add(eval);
+    DAOBasicEvaluation.insert(eval);
     println("Votre vote a été pris en compte !");
   }
 
@@ -340,18 +336,26 @@ public class CLI {
         username);
     restaurant.getEvaluations().add(eval);
 
+    DAOCompleteEvaluation.insert(eval);
+    int numeroEval = DAOCompleteEvaluation.insert(eval);
+
     println("Veuillez svp donner une note entre 1 et 5 pour chacun de ces critères : ");
 
-    Set<EvaluationCriteria> evaluationCriterias = fakeItems.getEvaluationCriterias();
+    Set<EvaluationCriteria> evaluationCriterias = DAOEvaluationCriteria.findAll();
 
     evaluationCriterias.forEach(currentCriteria -> {
       println(currentCriteria.getName() + " : " + currentCriteria.getDescription());
       Integer note = readInt();
+      eval.setId(numeroEval);
       Grade grade = new Grade(null, note, eval, currentCriteria);
       eval.getGrades().add(grade);
+      DAOGrade.insert(grade);
     });
 
+
+
     println("Votre évaluation a bien été enregistrée, merci !");
+
   }
 
   private void editRestaurant(Restaurant restaurant) {
@@ -365,7 +369,7 @@ public class CLI {
     restaurant.setWebsite(readString());
     println("Nouveau type de restaurant : ");
 
-    Set<RestaurantType> restaurantTypes = fakeItems.getRestaurantTypes();
+    Set<RestaurantType> restaurantTypes = DAORestaurantType.findAll();
 
     RestaurantType newType = pickRestaurantType(restaurantTypes);
     if (newType != restaurant.getType()) {
@@ -373,6 +377,8 @@ public class CLI {
       newType.getRestaurants().add(restaurant);
       restaurant.setType(newType);
     }
+
+    DAORestaurant.update(restaurant);
 
     println("Merci, le restaurant a bien été modifié !");
   }
@@ -383,25 +389,27 @@ public class CLI {
     println("Nouvelle rue : ");
     restaurant.getAddress().setStreet(readString());
 
-    Set<City> cities = fakeItems.getCities();
+    Set<City> cities = DAOCity.findAll();
 
     City newCity = pickCity(cities);
-    if (newCity.equals(restaurant.getAddress().getCity())) {
+    if (!newCity.equals(restaurant.getAddress().getCity())) {
       restaurant.getAddress().getCity().getRestaurants().remove(restaurant);
       newCity.getRestaurants().add(restaurant);
       restaurant.getAddress().setCity(newCity);
     }
 
+    DAORestaurant.update(restaurant);
+
     println("L'adresse a bien été modifiée ! Merci !");
   }
 
   private void deleteRestaurant(Restaurant restaurant) {
-    println("Etes-vous sûr de vouloir supprimer ce restaurant ? (O/n)");
+    println("Etes-vous sûr de vouloir supprimer ce restaurant ? (o/n)");
     String choice = readString();
     if ("o".equalsIgnoreCase(choice)) {
       restaurant.getAddress().getCity().getRestaurants().remove(restaurant);
       restaurant.getType().getRestaurants().remove(restaurant);
-      fakeItems.getAllRestaurants().remove(restaurant);
+      DAORestaurant.delete(restaurant);
       println("Le restaurant a bien été supprimé !");
     }
   }

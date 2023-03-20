@@ -1,5 +1,7 @@
 package ch.hearc.ig.guideresto.persistence;
 
+import oracle.jdbc.OracleConnection;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -10,6 +12,7 @@ public class DBOracleConnection {
     private static final String DBUSER = "romain_jysch";
     private static final String DBPWD = "romain_jysch";
     private static Connection cnn = null;
+    private static OracleConnection ocnn = null;
 
     public static Connection openConnection() throws SQLException {
         try {

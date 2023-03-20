@@ -14,6 +14,30 @@ public class Grade {
         this.criteria = criteria;
     }
 
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public void setGrade(Integer grade) {
+        this.grade = grade;
+    }
+
+    public CompleteEvaluation getEvaluation() {
+        return evaluation;
+    }
+
+    public void setEvaluation(CompleteEvaluation evaluation) {
+        this.evaluation = evaluation;
+    }
+
+    public void setCriteria(EvaluationCriteria criteria) {
+        this.criteria = criteria;
+    }
+
     public Integer getGrade() {
         return grade;
     }

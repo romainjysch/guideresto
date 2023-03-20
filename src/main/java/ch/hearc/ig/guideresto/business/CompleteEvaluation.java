@@ -29,4 +29,16 @@ public class CompleteEvaluation extends Evaluation {
   public Set<Grade> getGrades() {
     return grades;
   }
+
+  public void setComment(String comment) {
+    this.comment = comment;
+  }
+
+  public void setUsername(String username) {
+    this.username = username;
+  }
+
+  public void setGrades(Set<Grade> grades) {
+    this.grades = grades;
+  }
 }
