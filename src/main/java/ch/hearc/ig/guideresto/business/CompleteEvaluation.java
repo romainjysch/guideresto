@@ -29,7 +29,7 @@ public class CompleteEvaluation extends Evaluation {
   public Set<Grade> getGrades() {
     return grades;
   }
-
+  
   public void setComment(String comment) {
     this.comment = comment;
   }

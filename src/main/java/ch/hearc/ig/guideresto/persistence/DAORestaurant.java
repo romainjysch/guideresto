@@ -1,5 +1,7 @@
 package ch.hearc.ig.guideresto.persistence;
 
+import ch.hearc.ig.guideresto.business.CompleteEvaluation;
+import ch.hearc.ig.guideresto.business.Evaluation;
 import ch.hearc.ig.guideresto.business.Restaurant;
 
 import java.sql.Connection;
@@ -70,10 +72,11 @@ public class DAORestaurant {
     }
 
     public static void delete(Restaurant restaurant) {
-        // ToDo : Terminer la suppression de restaurant
-        // DAOBasicEvaluation.remove(restaurant)
-        // DAOCompleteEvaluation.remove(restaurant)
-        // Supprimer le restaurant :
+        for (Evaluation eval : restaurant.getEvaluations()) {
+            DAOGrade.delete(eval.getId());
+        }
+        DAOCompleteEvaluation.delete(restaurant);
+        DAOBasicEvaluation.delete(restaurant);
         try (Connection cnn = DBOracleConnection.openConnection();
              PreparedStatement pStmt = cnn.prepareStatement("DELETE FROM RESTAURANTS WHERE NUMERO = ?")) {
             pStmt.setInt(1, restaurant.getId());

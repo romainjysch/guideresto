@@ -52,4 +52,15 @@ public class DAOGrade {
         }
     }
 
+    public static void delete(int evaluationNumero) {
+        try (Connection cnn = DBOracleConnection.openConnection();
+             PreparedStatement pStmt = cnn.prepareStatement("DELETE FROM NOTES WHERE FK_COMM = ?")) {
+            pStmt.setInt(1, evaluationNumero);
+            pStmt.executeUpdate();
+            cnn.commit();
+        } catch(SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 }

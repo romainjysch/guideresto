@@ -49,4 +49,15 @@ public class DAOBasicEvaluation {
         }
     }
 
+    public static void delete(Restaurant restaurant) {
+        try (Connection cnn = DBOracleConnection.openConnection();
+             PreparedStatement pStmt = cnn.prepareStatement("DELETE FROM LIKES WHERE FK_REST = ?")) {
+            pStmt.setInt(1, restaurant.getId());
+            pStmt.executeUpdate();
+            cnn.commit();
+        } catch(SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 }

@@ -32,6 +32,8 @@ public abstract class Evaluation {
     this.restaurant = restaurant;
   }
 
+
+
   public Evaluation(Integer id, LocalDate visitDate, Restaurant restaurant) {
     this.id = id;
     this.visitDate = visitDate;
