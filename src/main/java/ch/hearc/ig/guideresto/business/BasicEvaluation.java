@@ -7,16 +7,8 @@ public class BasicEvaluation extends Evaluation {
   private boolean likeRestaurant;
   private String ipAddress;
 
-  public void setLikeRestaurant(boolean likeRestaurant) {
-    this.likeRestaurant = likeRestaurant;
-  }
-
   public String getIpAddress() {
     return ipAddress;
-  }
-
-  public void setIpAddress(String ipAddress) {
-    this.ipAddress = ipAddress;
   }
 
   public BasicEvaluation(Integer id, LocalDate visitDate, Restaurant restaurant, boolean likeRestaurant,

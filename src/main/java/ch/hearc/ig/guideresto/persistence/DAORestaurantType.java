@@ -1,6 +1,5 @@
 package ch.hearc.ig.guideresto.persistence;
 
-import ch.hearc.ig.guideresto.business.Restaurant;
 import ch.hearc.ig.guideresto.business.RestaurantType;
 
 import java.sql.Connection;
@@ -12,7 +11,6 @@ import java.util.Set;
 
 public class DAORestaurantType {
 
-    // Trouver tous les types de restaurant :
     public static Set<RestaurantType> findAll() {
         try(Connection cnn = DBOracleConnection.openConnection();
             PreparedStatement statement = cnn.prepareStatement("SELECT NUMERO, LIBELLE, DESCRIPTION FROM TYPES_GASTRONOMIQUES")) {
@@ -30,7 +28,6 @@ public class DAORestaurantType {
         }
     }
 
-    // Trouver un RestaurantType par son numéro :
     public static RestaurantType findByNumero(int restaurantTypeNumero) {
         try(Connection cnn = DBOracleConnection.openConnection();
             PreparedStatement statement = cnn.prepareStatement("SELECT NUMERO, LIBELLE, DESCRIPTION FROM TYPES_GASTRONOMIQUES WHERE NUMERO = ?")) {

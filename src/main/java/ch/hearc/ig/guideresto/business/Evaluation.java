@@ -20,10 +20,6 @@ public abstract class Evaluation {
     return visitDate;
   }
 
-  public void setVisitDate(LocalDate visitDate) {
-    this.visitDate = visitDate;
-  }
-
   public Restaurant getRestaurant() {
     return restaurant;
   }
@@ -31,8 +27,6 @@ public abstract class Evaluation {
   public void setRestaurant(Restaurant restaurant) {
     this.restaurant = restaurant;
   }
-
-
 
   public Evaluation(Integer id, LocalDate visitDate, Restaurant restaurant) {
     this.id = id;

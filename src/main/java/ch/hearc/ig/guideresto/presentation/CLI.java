@@ -27,13 +27,11 @@ public class CLI {
 
   private final Scanner scanner;
   private final PrintStream printStream;
-  private final FakeItems fakeItems;
 
   // Injection de dépendances
-  public CLI(Scanner scanner, PrintStream printStream, FakeItems fakeItems) {
+  public CLI(Scanner scanner, PrintStream printStream) {
     this.scanner = scanner;
     this.printStream = printStream;
-    this.fakeItems = fakeItems;
   }
 
   public void start() {
@@ -351,8 +349,6 @@ public class CLI {
       eval.getGrades().add(grade);
       DAOGrade.insert(grade);
     });
-
-
 
     println("Votre évaluation a bien été enregistrée, merci !");
 

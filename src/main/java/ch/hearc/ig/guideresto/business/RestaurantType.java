@@ -29,10 +29,6 @@ public class RestaurantType {
         return id;
     }
 
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
     public Set<Restaurant> getRestaurants() {
         return restaurants;
     }

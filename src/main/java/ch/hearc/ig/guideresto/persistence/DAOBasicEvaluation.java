@@ -34,7 +34,6 @@ public class DAOBasicEvaluation {
         }
     }
 
-    // Ajouter une nouvelle évaluation basique :
     public static void insert(BasicEvaluation eval) {
         try (Connection cnn = DBOracleConnection.openConnection();
              PreparedStatement pStmt = cnn.prepareStatement(INSERT_INTO_LIKES)) {
