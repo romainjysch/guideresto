@@ -12,7 +12,6 @@ import ch.hearc.ig.guideresto.business.Grade;
 import ch.hearc.ig.guideresto.business.Restaurant;
 import ch.hearc.ig.guideresto.business.RestaurantType;
 import ch.hearc.ig.guideresto.persistence.*;
-import ch.hearc.ig.guideresto.persistence.FakeItems;
 
 import java.io.PrintStream;
 import java.net.Inet4Address;
@@ -334,7 +333,7 @@ public class CLI {
     CompleteEvaluation eval = new CompleteEvaluation(null, LocalDate.now(), restaurant, comment,
         username);
     restaurant.getEvaluations().add(eval);
-    
+
     int numeroEval = DAOCompleteEvaluation.insert(eval);
 
     println("Veuillez svp donner une note entre 1 et 5 pour chacun de ces critères : ");
@@ -346,7 +345,7 @@ public class CLI {
       Integer note = readInt();
       eval.setId(numeroEval);
       Grade grade = new Grade(null, note, eval, currentCriteria);
-      //eval.getGrades().add(grade);
+      eval.getGrades().add(grade);
       DAOGrade.insert(grade);
     });
 
