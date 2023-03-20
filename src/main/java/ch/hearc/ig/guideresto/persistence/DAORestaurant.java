@@ -2,6 +2,8 @@ package ch.hearc.ig.guideresto.persistence;
 
 import ch.hearc.ig.guideresto.business.Evaluation;
 import ch.hearc.ig.guideresto.business.Restaurant;
+import oracle.jdbc.OraclePreparedStatement;
+import oracle.jdbc.OracleTypes;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -37,17 +39,24 @@ public class DAORestaurant {
         }
     }
 
-    public static void insert(Restaurant restaurant) {
+    public static int insert(Restaurant restaurant) {
         try (Connection cnn = DBOracleConnection.openConnection();
-             PreparedStatement pStmt = cnn.prepareStatement("INSERT INTO RESTAURANTS (NOM, ADRESSE, DESCRIPTION, SITE_WEB, FK_TYPE, FK_VILL) VALUES (?, ?, ?, ?, ?, ?)")) {
+             OraclePreparedStatement pStmt = (OraclePreparedStatement) cnn.prepareStatement("INSERT INTO RESTAURANTS (NOM, ADRESSE, DESCRIPTION, SITE_WEB, FK_TYPE, FK_VILL) VALUES (?, ?, ?, ?, ?, ?) RETURNING NUMERO INTO ?")) {
             pStmt.setString(1, restaurant.getName());
             pStmt.setString(2, restaurant.getStreet());
             pStmt.setString(3, restaurant.getDescription());
             pStmt.setString(4, restaurant.getWebsite());
             pStmt.setInt(5, restaurant.getType().getId());
             pStmt.setInt(6, restaurant.getAddress().getCity().getId());
+            pStmt.registerReturnParameter(7, OracleTypes.NUMBER);
             pStmt.executeUpdate();
             cnn.commit();
+            ResultSet rs = null;
+            rs = pStmt.getReturnResultSet();
+            while (rs.next()) {
+                return rs.getInt(1);
+            }
+            return 0;
         } catch(SQLException e) {
             throw new RuntimeException(e);
         }

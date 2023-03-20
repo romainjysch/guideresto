@@ -217,7 +217,8 @@ public class CLI {
     city.getRestaurants().add(restaurant);
     restaurant.getAddress().setCity(city);
 
-    DAORestaurant.insert(restaurant);
+    int numeroRestaurant = DAORestaurant.insert(restaurant);
+    restaurant.setId(numeroRestaurant);
 
     showRestaurant(restaurant);
   }
@@ -333,8 +334,7 @@ public class CLI {
     CompleteEvaluation eval = new CompleteEvaluation(null, LocalDate.now(), restaurant, comment,
         username);
     restaurant.getEvaluations().add(eval);
-
-    DAOCompleteEvaluation.insert(eval);
+    
     int numeroEval = DAOCompleteEvaluation.insert(eval);
 
     println("Veuillez svp donner une note entre 1 et 5 pour chacun de ces critères : ");
@@ -346,7 +346,7 @@ public class CLI {
       Integer note = readInt();
       eval.setId(numeroEval);
       Grade grade = new Grade(null, note, eval, currentCriteria);
-      eval.getGrades().add(grade);
+      //eval.getGrades().add(grade);
       DAOGrade.insert(grade);
     });
 
