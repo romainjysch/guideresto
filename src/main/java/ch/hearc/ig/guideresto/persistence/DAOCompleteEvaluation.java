@@ -13,7 +13,13 @@ public class DAOCompleteEvaluation {
     private static final String SELECT_BY_NUMERORESTAURANT = "SELECT NUMERO, DATE_EVAL, COMMENTAIRE, NOM_UTILISATEUR, FK_REST FROM COMMENTAIRES WHERE FK_REST = ?";
     private static final String INSERT_INTO_COMMENTAIRES = "INSERT INTO COMMENTAIRES (DATE_EVAL, COMMENTAIRE, NOM_UTILISATEUR, FK_REST) VALUES (?, ?, ?, ?) RETURNING NUMERO INTO ?";
 
-    public static Set<Evaluation> findByNumeroRestaurant(Restaurant restaurant) {
+    private final DAOGrade daoGrade;
+
+    public DAOCompleteEvaluation(DAOGrade daoGrade) {
+        this.daoGrade = daoGrade;
+    }
+
+    public Set<Evaluation> findByNumeroRestaurant(Restaurant restaurant) {
         try (Connection cnn = DBOracleConnection.openConnection();
              PreparedStatement pStmt = cnn.prepareStatement(SELECT_BY_NUMERORESTAURANT)) {
             pStmt.setInt(1, restaurant.getId());
@@ -26,7 +32,7 @@ public class DAOCompleteEvaluation {
                         resultSet.getString("COMMENTAIRE"),
                         resultSet.getString("NOM_UTILISATEUR")
                 );
-                evaluation.getGrades().addAll(DAOGrade.findByNumeroEvaluation(evaluation));
+                evaluation.getGrades().addAll(daoGrade.findByNumeroEvaluation(evaluation));
                 evaluations.add(evaluation);
             }
             resultSet.close();
@@ -36,7 +42,7 @@ public class DAOCompleteEvaluation {
         }
     }
 
-    public static int insert(CompleteEvaluation eval) {
+    public int insert(CompleteEvaluation eval) {
         try (Connection cnn = DBOracleConnection.openConnection();
              OraclePreparedStatement pStmt = (OraclePreparedStatement) cnn.prepareStatement(INSERT_INTO_COMMENTAIRES)) {
             pStmt.setDate(1, Date.valueOf(eval.getVisitDate()));
@@ -57,7 +63,7 @@ public class DAOCompleteEvaluation {
         }
     }
 
-    public static void delete(Restaurant restaurant) {
+    public void delete(Restaurant restaurant) {
         try (Connection cnn = DBOracleConnection.openConnection();
              PreparedStatement pStmt = cnn.prepareStatement("DELETE FROM COMMENTAIRES WHERE FK_REST = ?")) {
             pStmt.setInt(1, restaurant.getId());

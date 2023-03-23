@@ -11,7 +11,7 @@ import java.util.Set;
 
 public class DAOCity {
 
-    public static Set<City> findAll() {
+    public Set<City> findAll() {
         try(Connection cnn = DBOracleConnection.openConnection();
             PreparedStatement statement = cnn.prepareStatement("SELECT NUMERO, CODE_POSTAL, NOM_VILLE FROM VILLES")) {
             ResultSet resultSet = statement.executeQuery();
@@ -26,7 +26,7 @@ public class DAOCity {
         }
     }
 
-    public static City findByNumero(int cityNumero) {
+    public City findByNumero(int cityNumero) {
         try(Connection cnn = DBOracleConnection.openConnection();
             PreparedStatement statement = cnn.prepareStatement("SELECT NUMERO, CODE_POSTAL, NOM_VILLE FROM VILLES WHERE NUMERO = ?")) {
             statement.setInt(1, cityNumero);
@@ -42,7 +42,7 @@ public class DAOCity {
         }
     }
     
-    public static int findByZipAndName(City city) {
+    public int findByZipAndName(City city) {
         try(Connection cnn = DBOracleConnection.openConnection();
             PreparedStatement statement = cnn.prepareStatement("SELECT NUMERO FROM VILLES WHERE CODE_POSTAL = ? AND NOM_VILLE = ?")) {
             statement.setString(1, city.getZipCode());
@@ -59,7 +59,7 @@ public class DAOCity {
         }
     }
 
-    public static void insert(City city) {
+    public void insert(City city) {
         try (Connection cnn = DBOracleConnection.openConnection();
              PreparedStatement pStmt = cnn.prepareStatement("INSERT INTO VILLES (CODE_POSTAL, NOM_VILLE) VALUES (?, ?)")) {
             pStmt.setString(1, city.getZipCode());

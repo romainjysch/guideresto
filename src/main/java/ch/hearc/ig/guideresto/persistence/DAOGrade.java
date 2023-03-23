@@ -15,7 +15,13 @@ public class DAOGrade {
     private static final String SELECT_BY_NUMEROEVAL = "SELECT NUMERO, NOTE, FK_COMM, FK_CRIT FROM NOTES WHERE FK_COMM = ?";
     private static final String INSERT_INTO_NOTES = "INSERT INTO NOTES (NOTE, FK_COMM, FK_CRIT) VALUES (?, ?, ?)";
 
-    public static Set<Grade> findByNumeroEvaluation(CompleteEvaluation eval) {
+    private final DAOEvaluationCriteria daoEvaluationCriteria;
+
+    public DAOGrade(DAOEvaluationCriteria daoEvaluationCriteria) {
+        this.daoEvaluationCriteria = daoEvaluationCriteria;
+    }
+
+    public Set<Grade> findByNumeroEvaluation(CompleteEvaluation eval) {
         try (Connection cnn = DBOracleConnection.openConnection();
              PreparedStatement pStmt = cnn.prepareStatement(SELECT_BY_NUMEROEVAL)) {
             pStmt.setInt(1, eval.getId());
@@ -26,7 +32,7 @@ public class DAOGrade {
                         resultSet.getInt("NUMERO"),
                         resultSet.getInt("NOTE"),
                         eval,
-                        DAOEvaluationCriteria.findByNumero(resultSet.getInt("FK_CRIT"))
+                        daoEvaluationCriteria.findByNumero(resultSet.getInt("FK_CRIT"))
                 );
                 grades.add(grade);
             }
@@ -37,7 +43,7 @@ public class DAOGrade {
         }
     }
 
-    public static void insert(Grade grade) {
+    public void insert(Grade grade) {
         try (Connection cnn = DBOracleConnection.openConnection();
              PreparedStatement pStmt = cnn.prepareStatement(INSERT_INTO_NOTES)) {
             pStmt.setInt(1, grade.getGrade());
@@ -50,7 +56,7 @@ public class DAOGrade {
         }
     }
 
-    public static void delete(int evaluationNumero) {
+    public void delete(int evaluationNumero) {
         try (Connection cnn = DBOracleConnection.openConnection();
              PreparedStatement pStmt = cnn.prepareStatement("DELETE FROM NOTES WHERE FK_COMM = ?")) {
             pStmt.setInt(1, evaluationNumero);
