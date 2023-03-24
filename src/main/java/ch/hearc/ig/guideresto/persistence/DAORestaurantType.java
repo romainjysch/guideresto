@@ -11,34 +11,33 @@ import java.util.Set;
 
 public class DAORestaurantType {
 
-    public static Set<RestaurantType> findAll() {
+    public Set<RestaurantType> findAll() {
         try(Connection cnn = DBOracleConnection.openConnection();
-            PreparedStatement statement = cnn.prepareStatement("SELECT NUMERO, LIBELLE, DESCRIPTION FROM TYPES_GASTRONOMIQUES")) {
-            ResultSet resultSet = statement.executeQuery();
+            PreparedStatement statement = cnn.prepareStatement("SELECT NUMERO, LIBELLE, DESCRIPTION FROM TYPES_GASTRONOMIQUES");
+            ResultSet resultSet = statement.executeQuery()) {
             Set<RestaurantType> restaurantTypes = new HashSet<>();
             while(resultSet.next()) {
                 restaurantTypes.add(new RestaurantType(resultSet.getInt("NUMERO"),
                         resultSet.getString("LIBELLE"),
                         resultSet.getString("DESCRIPTION")));
             }
-            resultSet.close();
             return restaurantTypes;
         } catch(SQLException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public static RestaurantType findByNumero(int restaurantTypeNumero) {
+    public RestaurantType findByNumero(int restaurantTypeNumero) {
         try(Connection cnn = DBOracleConnection.openConnection();
             PreparedStatement statement = cnn.prepareStatement("SELECT NUMERO, LIBELLE, DESCRIPTION FROM TYPES_GASTRONOMIQUES WHERE NUMERO = ?")) {
             statement.setInt(1, restaurantTypeNumero);
-            ResultSet resultSet = statement.executeQuery();
-            RestaurantType restaurantType = null;
-            while (resultSet.next()) {
-                restaurantType = new RestaurantType(resultSet.getInt("numero"), resultSet.getString("libelle"), resultSet.getString("description"));
+            try(ResultSet resultSet = statement.executeQuery()) {
+                RestaurantType restaurantType = null;
+                while (resultSet.next()) {
+                    restaurantType = new RestaurantType(resultSet.getInt("numero"), resultSet.getString("libelle"), resultSet.getString("description"));
+                }
+                return restaurantType;
             }
-            resultSet.close();
-            return restaurantType;
         } catch(SQLException e) {
             throw new RuntimeException(e);
         }

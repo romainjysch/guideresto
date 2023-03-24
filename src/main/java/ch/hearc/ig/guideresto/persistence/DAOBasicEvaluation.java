@@ -13,7 +13,7 @@ public class DAOBasicEvaluation {
     private static final String SELECT_BY_NUMERORESTAURANT = "SELECT NUMERO, APPRECIATION, DATE_EVAL, ADRESSE_IP, FK_REST FROM LIKES WHERE FK_REST = ?";
     private static final String INSERT_INTO_LIKES = "INSERT INTO LIKES (APPRECIATION, DATE_EVAL, ADRESSE_IP, FK_REST) VALUES (?, ?, ?, ?)";
 
-    public static Set<Evaluation> findByNumeroRestaurant(Restaurant restaurant) {
+    public Set<Evaluation> findByNumeroRestaurant(Restaurant restaurant) {
         try(Connection cnn = DBOracleConnection.openConnection();
             PreparedStatement pStmt = cnn.prepareStatement(SELECT_BY_NUMERORESTAURANT)) {
             pStmt.setInt(1, restaurant.getId());
@@ -34,7 +34,7 @@ public class DAOBasicEvaluation {
         }
     }
 
-    public static void insert(BasicEvaluation eval) {
+    public void insert(BasicEvaluation eval) {
         try (Connection cnn = DBOracleConnection.openConnection();
              PreparedStatement pStmt = cnn.prepareStatement(INSERT_INTO_LIKES)) {
             pStmt.setString(1, DAOUtils.booleanToString(eval.isLikeRestaurant()));
@@ -48,7 +48,7 @@ public class DAOBasicEvaluation {
         }
     }
 
-    public static void delete(Restaurant restaurant) {
+    public void delete(Restaurant restaurant) {
         try (Connection cnn = DBOracleConnection.openConnection();
              PreparedStatement pStmt = cnn.prepareStatement("DELETE FROM LIKES WHERE FK_REST = ?")) {
             pStmt.setInt(1, restaurant.getId());

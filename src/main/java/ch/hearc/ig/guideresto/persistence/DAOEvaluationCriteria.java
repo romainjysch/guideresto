@@ -14,7 +14,7 @@ public class DAOEvaluationCriteria {
     private static final String SELECT_ALL = "SELECT NUMERO, NOM, DESCRIPTION FROM CRITERES_EVALUATION";
     private static final String SELECT_BYNUMERO = "SELECT NUMERO, NOM, DESCRIPTION FROM CRITERES_EVALUATION WHERE NUMERO = ?";
 
-    public static Set<EvaluationCriteria> findAll() {
+    public Set<EvaluationCriteria> findAll() {
         try(Connection cnn = DBOracleConnection.openConnection();
             PreparedStatement pStmt = cnn.prepareStatement(SELECT_ALL)) {
             ResultSet resultSet = pStmt.executeQuery();
@@ -33,7 +33,7 @@ public class DAOEvaluationCriteria {
         }
     }
 
-    public static EvaluationCriteria findByNumero(int evaluationCriteriaNumero) {
+    public EvaluationCriteria findByNumero(int evaluationCriteriaNumero) {
         try(Connection cnn = DBOracleConnection.openConnection();
             PreparedStatement pStmt = cnn.prepareStatement(SELECT_BYNUMERO)) {
             pStmt.setInt(1, evaluationCriteriaNumero);
