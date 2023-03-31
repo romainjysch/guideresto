@@ -1,8 +1,8 @@
 package ch.hearc.ig.guideresto.persistence;
 
 import ch.hearc.ig.guideresto.business.RestaurantType;
-import ch.hearc.ig.guideresto.services.DBTransaction;
 
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -11,8 +11,8 @@ import java.util.Set;
 
 public class DAORestaurantType {
 
-    public Set<RestaurantType> findAll(DBTransaction dbTransaction) {
-        try(PreparedStatement statement = dbTransaction.getOracleConnection().getCnn().prepareStatement("SELECT NUMERO, LIBELLE, DESCRIPTION FROM TYPES_GASTRONOMIQUES");
+    public Set<RestaurantType> findAll(Connection connection) {
+        try(PreparedStatement statement = connection.prepareStatement("SELECT NUMERO, LIBELLE, DESCRIPTION FROM TYPES_GASTRONOMIQUES");
             ResultSet resultSet = statement.executeQuery()) {
             Set<RestaurantType> restaurantTypes = new HashSet<>();
             while(resultSet.next()) {
@@ -26,8 +26,8 @@ public class DAORestaurantType {
         }
     }
 
-    public RestaurantType findByNumero(DBTransaction dbTransaction, int restaurantTypeNumero) {
-        try(PreparedStatement statement = dbTransaction.getOracleConnection().getCnn().prepareStatement("SELECT NUMERO, LIBELLE, DESCRIPTION FROM TYPES_GASTRONOMIQUES WHERE NUMERO = ?")) {
+    public RestaurantType findByNumero(Connection connection, int restaurantTypeNumero) {
+        try(PreparedStatement statement = connection.prepareStatement("SELECT NUMERO, LIBELLE, DESCRIPTION FROM TYPES_GASTRONOMIQUES WHERE NUMERO = ?")) {
             statement.setInt(1, restaurantTypeNumero);
             try(ResultSet resultSet = statement.executeQuery()) {
                 RestaurantType restaurantType = null;

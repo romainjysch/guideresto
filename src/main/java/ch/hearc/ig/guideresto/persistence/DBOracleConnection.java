@@ -1,4 +1,4 @@
-package ch.hearc.ig.guideresto.services;
+package ch.hearc.ig.guideresto.persistence;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -23,14 +23,6 @@ public class DBOracleConnection {
             return cnn;
         } catch (SQLException exOpenConnection) {
             throw new RuntimeException(exOpenConnection);
-        }
-    }
-
-    public void closeConnection() {
-        try {
-            cnn.close();
-        } catch (SQLException exCloseConnection) {
-            throw new RuntimeException(exCloseConnection);
         }
     }
 
