@@ -8,10 +8,8 @@ import ch.hearc.ig.guideresto.business.Grade;
 import ch.hearc.ig.guideresto.business.Restaurant;
 import ch.hearc.ig.guideresto.business.RestaurantType;
 import ch.hearc.ig.guideresto.persistence.DAOFactory;
-import ch.hearc.ig.guideresto.persistence.DBOracleConnection;
 import ch.hearc.ig.guideresto.persistence.DBTransaction;
 import java.util.Set;
-import org.w3c.dom.CDATASection;
 
 public class RestaurantService {
     private final DBTransaction dbTransaction;

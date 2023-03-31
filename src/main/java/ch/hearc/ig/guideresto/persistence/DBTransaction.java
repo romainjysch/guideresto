@@ -1,8 +1,5 @@
 package ch.hearc.ig.guideresto.persistence;
 
-import ch.hearc.ig.guideresto.persistence.DAOFactory;
-
-import ch.hearc.ig.guideresto.persistence.DBOracleConnection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.function.Consumer;
