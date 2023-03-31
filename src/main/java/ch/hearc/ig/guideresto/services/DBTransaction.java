@@ -28,10 +28,11 @@ public class DBTransaction {
         return daoFactory;
     }
 
-    public void functionTransaction(Function<Connection, Integer> function) {
+    public int functionTransaction(Function<Connection, Integer> function) {
         try {
-            function.apply(this.cnn);
+            int result = function.apply(this.cnn);
             this.cnn.commit();
+            return result;
         } catch (SQLException exFuntion) {
             try {
                 this.cnn.rollback();
