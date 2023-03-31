@@ -8,6 +8,7 @@ import java.util.function.Consumer;
 
 import java.sql.Connection;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 public class DBTransaction {
 
@@ -27,7 +28,7 @@ public class DBTransaction {
         return daoFactory;
     }
 
-    public void functionTransaction(Function<Connection, Objects> function) {
+    public void functionTransaction(Function<Connection, Integer> function) {
         try {
             function.apply(this.cnn);
             this.cnn.commit();
@@ -39,6 +40,10 @@ public class DBTransaction {
             }
             throw new RuntimeException(exFuntion);
         }
+    }
+
+    public void supplierTransaction(Supplier<Connection> function) {
+
     }
 
     public void consumerTransaction(Consumer<Connection> function) {
