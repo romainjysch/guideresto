@@ -21,7 +21,7 @@ public class DAOCompleteEvaluation {
     }
 
     public Set<Evaluation> findByNumeroRestaurant(DBTransaction dbTransaction, Restaurant restaurant) {
-        try (PreparedStatement pStmt = dbTransaction.getCnn().prepareStatement(SELECT_BY_NUMERORESTAURANT)) {
+        try (PreparedStatement pStmt = dbTransaction.getOracleConnection().getCnn().prepareStatement(SELECT_BY_NUMERORESTAURANT)) {
             pStmt.setInt(1, restaurant.getId());
             ResultSet resultSet = pStmt.executeQuery();
             Set<Evaluation> evaluations = new HashSet<>();
@@ -43,28 +43,33 @@ public class DAOCompleteEvaluation {
     }
 
     public int insert(DBTransaction dbTransaction, CompleteEvaluation eval) {
-        try (OraclePreparedStatement pStmt = (OraclePreparedStatement) dbTransaction.getCnn().prepareStatement(INSERT_INTO_COMMENTAIRES)) {
-            pStmt.setDate(1, Date.valueOf(eval.getVisitDate()));
-            pStmt.setString(2, eval.getComment());
-            pStmt.setString(3, eval.getUsername());
-            pStmt.setInt(4, eval.getRestaurant().getId());
-            pStmt.registerReturnParameter(5, OracleTypes.NUMBER);
-            pStmt.executeUpdate();
-            dbTransaction.getCnn().commit();
-            ResultSet rs = null;
-            rs = pStmt.getReturnResultSet();
-            while (rs.next()) {
-                return rs.getInt(1);
-            }
-            return 0;
-        } catch (SQLException e) {
+        try {
+            return dbTransaction.functionTransaction(cnn -> {
+                try (OraclePreparedStatement pStmt = (OraclePreparedStatement) dbTransaction.getOracleConnection().getCnn().prepareStatement(INSERT_INTO_COMMENTAIRES)) {
+                    pStmt.setDate(1, Date.valueOf(eval.getVisitDate()));
+                    pStmt.setString(2, eval.getComment());
+                    pStmt.setString(3, eval.getUsername());
+                    pStmt.setInt(4, eval.getRestaurant().getId());
+                    pStmt.registerReturnParameter(5, OracleTypes.NUMBER);
+                    pStmt.executeUpdate();
+                    ResultSet rs = null;
+                    rs = pStmt.getReturnResultSet();
+                    while (rs.next()) {
+                        return rs.getInt(1);
+                    }
+                    return 0;
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
     public void delete(DBTransaction dbTransaction, Restaurant restaurant) {
         dbTransaction.consumerTransaction(cnn -> {
-            try (PreparedStatement pStmt = dbTransaction.getCnn().prepareStatement("DELETE FROM COMMENTAIRES WHERE FK_REST = ?")) {
+            try (PreparedStatement pStmt = dbTransaction.getOracleConnection().getCnn().prepareStatement("DELETE FROM COMMENTAIRES WHERE FK_REST = ?")) {
                 pStmt.setInt(1, restaurant.getId());
                 pStmt.executeUpdate();
             } catch(SQLException e) {

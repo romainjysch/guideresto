@@ -22,7 +22,7 @@ public class DAOGrade {
     }
 
     public Set<Grade> findByNumeroEvaluation(DBTransaction dbTransaction, CompleteEvaluation eval) {
-        try (PreparedStatement pStmt = dbTransaction.getCnn().prepareStatement(SELECT_BY_NUMEROEVAL)) {
+        try (PreparedStatement pStmt = dbTransaction.getOracleConnection().getCnn().prepareStatement(SELECT_BY_NUMEROEVAL)) {
             pStmt.setInt(1, eval.getId());
             ResultSet resultSet = pStmt.executeQuery();
             Set<Grade> grades = new HashSet<>();
@@ -44,7 +44,7 @@ public class DAOGrade {
 
     public void insert(DBTransaction dbTransaction, Grade grade) {
         dbTransaction.consumerTransaction(cnn -> {
-            try (PreparedStatement pStmt = dbTransaction.getCnn().prepareStatement(INSERT_INTO_NOTES)) {
+            try (PreparedStatement pStmt = dbTransaction.getOracleConnection().getCnn().prepareStatement(INSERT_INTO_NOTES)) {
                 pStmt.setInt(1, grade.getGrade());
                 pStmt.setInt(2, grade.getEvaluation().getId());
                 pStmt.setInt(3, grade.getCriteria().getId());
@@ -57,7 +57,7 @@ public class DAOGrade {
 
     public void delete(DBTransaction dbTransaction, int evaluationNumero) {
         dbTransaction.consumerTransaction(cnn -> {
-            try (PreparedStatement pStmt = dbTransaction.getCnn().prepareStatement("DELETE FROM NOTES WHERE FK_COMM = ?")) {
+            try (PreparedStatement pStmt = dbTransaction.getOracleConnection().getCnn().prepareStatement("DELETE FROM NOTES WHERE FK_COMM = ?")) {
                 pStmt.setInt(1, evaluationNumero);
                 pStmt.executeUpdate();
             } catch(SQLException e) {

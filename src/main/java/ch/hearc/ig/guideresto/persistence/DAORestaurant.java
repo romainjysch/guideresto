@@ -29,7 +29,7 @@ public class DAORestaurant {
     }
 
     public Set<Restaurant> findAll(DBTransaction dbTransaction) {
-        try(PreparedStatement statement = dbTransaction.getCnn().prepareStatement("SELECT NUMERO, NOM, ADRESSE, DESCRIPTION, SITE_WEB, FK_TYPE, FK_VILL FROM RESTAURANTS")) {
+        try(PreparedStatement statement = dbTransaction.getOracleConnection().getCnn().prepareStatement("SELECT NUMERO, NOM, ADRESSE, DESCRIPTION, SITE_WEB, FK_TYPE, FK_VILL FROM RESTAURANTS")) {
             try(ResultSet resultSet = statement.executeQuery()) {
                 Set<Restaurant> restaurants = new HashSet<>();
                 while (resultSet.next()) {
@@ -51,28 +51,6 @@ public class DAORestaurant {
             throw new RuntimeException(e);
         }
     }
-
-    /*public int insert(DBTransaction dbTransaction, Restaurant restaurant) {
-        try (OraclePreparedStatement pStmt = (OraclePreparedStatement) dbTransaction.getCnn().prepareStatement("INSERT INTO RESTAURANTS (NOM, ADRESSE, DESCRIPTION, SITE_WEB, FK_TYPE, FK_VILL) VALUES (?, ?, ?, ?, ?, ?) RETURNING NUMERO INTO ?")) {
-            pStmt.setString(1, restaurant.getName());
-            pStmt.setString(2, restaurant.getStreet());
-            pStmt.setString(3, restaurant.getDescription());
-            pStmt.setString(4, restaurant.getWebsite());
-            pStmt.setInt(5, restaurant.getType().getId());
-            pStmt.setInt(6, restaurant.getAddress().getCity().getId());
-            pStmt.registerReturnParameter(7, OracleTypes.NUMBER);
-            pStmt.executeUpdate();
-            dbTransaction.getCnn().commit();
-            try(ResultSet rs = pStmt.getReturnResultSet()){
-                if (rs.next()) {
-                    return rs.getInt(1);
-                }
-                return 0;
-            }
-        } catch(SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }*/
 
     public int insert(DBTransaction dbTransaction, Restaurant restaurant) {
         try {
@@ -96,14 +74,14 @@ public class DAORestaurant {
                     throw new RuntimeException(e);
                 }
             });
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 
     public void update(DBTransaction dbTransaction, Restaurant restaurant) {
         dbTransaction.consumerTransaction(cnn -> {
-            try (PreparedStatement pStmt = dbTransaction.getCnn().prepareStatement("UPDATE RESTAURANTS SET NOM = ?, ADRESSE = ?, DESCRIPTION = ?, SITE_WEB = ?, FK_TYPE = ?, FK_VILL = ? WHERE NUMERO = ?")) {
+            try (PreparedStatement pStmt = dbTransaction.getOracleConnection().getCnn().prepareStatement("UPDATE RESTAURANTS SET NOM = ?, ADRESSE = ?, DESCRIPTION = ?, SITE_WEB = ?, FK_TYPE = ?, FK_VILL = ? WHERE NUMERO = ?")) {
                 pStmt.setString(1, restaurant.getName());
                 pStmt.setString(2, restaurant.getStreet());
                 pStmt.setString(3, restaurant.getDescription());
@@ -125,10 +103,9 @@ public class DAORestaurant {
             }
             dbTransaction.getDaoFactory().getDaoBasicEvaluation().delete(dbTransaction, restaurant);
             dbTransaction.getDaoFactory().getDaoCompleteEvaluation().delete(dbTransaction, restaurant);
-            try (PreparedStatement pStmt = dbTransaction.getCnn().prepareStatement("DELETE FROM RESTAURANTS WHERE NUMERO = ?")) {
+            try (PreparedStatement pStmt = dbTransaction.getOracleConnection().getCnn().prepareStatement("DELETE FROM RESTAURANTS WHERE NUMERO = ?")) {
                 pStmt.setInt(1, restaurant.getId());
                 pStmt.executeUpdate();
-                dbTransaction.getCnn().commit();
             } catch(SQLException e) {
                 throw new RuntimeException(e);
             }

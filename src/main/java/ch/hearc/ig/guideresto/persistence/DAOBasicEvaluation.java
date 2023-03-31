@@ -15,7 +15,7 @@ public class DAOBasicEvaluation {
     private static final String INSERT_INTO_LIKES = "INSERT INTO LIKES (APPRECIATION, DATE_EVAL, ADRESSE_IP, FK_REST) VALUES (?, ?, ?, ?)";
 
     public Set<Evaluation> findByNumeroRestaurant(DBTransaction dbTransaction, Restaurant restaurant) {
-        try(PreparedStatement pStmt = dbTransaction.getCnn().prepareStatement(SELECT_BY_NUMERORESTAURANT)) {
+        try(PreparedStatement pStmt = dbTransaction.getOracleConnection().getCnn().prepareStatement(SELECT_BY_NUMERORESTAURANT)) {
             pStmt.setInt(1, restaurant.getId());
             ResultSet resultSet = pStmt.executeQuery();
             Set<Evaluation> evaluations = new HashSet<>();
@@ -36,7 +36,7 @@ public class DAOBasicEvaluation {
 
     public void insert(DBTransaction dbTransaction, BasicEvaluation eval) {
         dbTransaction.consumerTransaction(cnn -> {
-            try (PreparedStatement pStmt = dbTransaction.getCnn().prepareStatement(INSERT_INTO_LIKES)) {
+            try (PreparedStatement pStmt = dbTransaction.getOracleConnection().getCnn().prepareStatement(INSERT_INTO_LIKES)) {
                 pStmt.setString(1, DAOUtils.booleanToString(eval.isLikeRestaurant()));
                 pStmt.setDate(2, Date.valueOf(eval.getVisitDate()));
                 pStmt.setString(3, eval.getIpAddress());
@@ -50,7 +50,7 @@ public class DAOBasicEvaluation {
 
     public void delete(DBTransaction dbTransaction, Restaurant restaurant) {
         dbTransaction.consumerTransaction(cnn -> {
-            try (PreparedStatement pStmt = dbTransaction.getCnn().prepareStatement("DELETE FROM LIKES WHERE FK_REST = ?")) {
+            try (PreparedStatement pStmt = dbTransaction.getOracleConnection().getCnn().prepareStatement("DELETE FROM LIKES WHERE FK_REST = ?")) {
                 pStmt.setInt(1, restaurant.getId());
                 pStmt.executeUpdate();
             } catch(SQLException e) {

@@ -11,7 +11,6 @@ import ch.hearc.ig.guideresto.business.EvaluationCriteria;
 import ch.hearc.ig.guideresto.business.Grade;
 import ch.hearc.ig.guideresto.business.Restaurant;
 import ch.hearc.ig.guideresto.business.RestaurantType;
-import ch.hearc.ig.guideresto.services.DBOracleConnection;
 import ch.hearc.ig.guideresto.services.DBTransaction;
 
 import java.io.PrintStream;
@@ -75,6 +74,7 @@ public class CLI {
         addNewRestaurant();
         break;
       case 0:
+        dbTransaction.getOracleConnection().closeConnection();
         println("Au revoir !");
         break;
       default:

@@ -12,7 +12,7 @@ import java.util.Set;
 public class DAOCity {
 
     public Set<City> findAll(DBTransaction dbTransaction) {
-        try(PreparedStatement statement = dbTransaction.getCnn().prepareStatement("SELECT NUMERO, CODE_POSTAL, NOM_VILLE FROM VILLES")) {
+        try(PreparedStatement statement = dbTransaction.getOracleConnection().getCnn().prepareStatement("SELECT NUMERO, CODE_POSTAL, NOM_VILLE FROM VILLES")) {
             ResultSet resultSet = statement.executeQuery();
             Set<City> cities = new HashSet<>();
             while(resultSet.next()) {
@@ -26,7 +26,7 @@ public class DAOCity {
     }
 
     public City findByNumero(DBTransaction dbTransaction, int cityNumero) {
-        try(PreparedStatement statement = dbTransaction.getCnn().prepareStatement("SELECT NUMERO, CODE_POSTAL, NOM_VILLE FROM VILLES WHERE NUMERO = ?")) {
+        try(PreparedStatement statement = dbTransaction.getOracleConnection().getCnn().prepareStatement("SELECT NUMERO, CODE_POSTAL, NOM_VILLE FROM VILLES WHERE NUMERO = ?")) {
             statement.setInt(1, cityNumero);
             ResultSet resultSet = statement.executeQuery();
             City city = null;
@@ -41,7 +41,7 @@ public class DAOCity {
     }
     
     public int findByZipAndName(DBTransaction dbTransaction, City city) {
-        try(PreparedStatement statement = dbTransaction.getCnn().prepareStatement("SELECT NUMERO FROM VILLES WHERE CODE_POSTAL = ? AND NOM_VILLE = ?")) {
+        try(PreparedStatement statement = dbTransaction.getOracleConnection().getCnn().prepareStatement("SELECT NUMERO FROM VILLES WHERE CODE_POSTAL = ? AND NOM_VILLE = ?")) {
             statement.setString(1, city.getZipCode());
             statement.setString(2, city.getCityName());
             ResultSet resultSet = statement.executeQuery();
@@ -58,7 +58,7 @@ public class DAOCity {
 
     public void insert(DBTransaction dbTransaction, City city) {
         dbTransaction.consumerTransaction(cnn -> {
-            try (PreparedStatement pStmt = dbTransaction.getCnn().prepareStatement("INSERT INTO VILLES (CODE_POSTAL, NOM_VILLE) VALUES (?, ?)")) {
+            try (PreparedStatement pStmt = dbTransaction.getOracleConnection().getCnn().prepareStatement("INSERT INTO VILLES (CODE_POSTAL, NOM_VILLE) VALUES (?, ?)")) {
                 pStmt.setString(1, city.getZipCode());
                 pStmt.setString(2, city.getCityName());
                 pStmt.executeUpdate();

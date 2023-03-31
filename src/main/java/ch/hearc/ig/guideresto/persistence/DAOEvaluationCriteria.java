@@ -15,7 +15,7 @@ public class DAOEvaluationCriteria {
     private static final String SELECT_BYNUMERO = "SELECT NUMERO, NOM, DESCRIPTION FROM CRITERES_EVALUATION WHERE NUMERO = ?";
 
     public Set<EvaluationCriteria> findAll(DBTransaction dbTransaction) {
-        try(PreparedStatement pStmt = dbTransaction.getCnn().prepareStatement(SELECT_ALL)) {
+        try(PreparedStatement pStmt = dbTransaction.getOracleConnection().getCnn().prepareStatement(SELECT_ALL)) {
             ResultSet resultSet = pStmt.executeQuery();
             Set<EvaluationCriteria> evaluationCriterias = new HashSet<>();
             while(resultSet.next()) {
@@ -33,7 +33,7 @@ public class DAOEvaluationCriteria {
     }
 
     public EvaluationCriteria findByNumero(DBTransaction dbTransaction, int evaluationCriteriaNumero) {
-        try(PreparedStatement pStmt = dbTransaction.getCnn().prepareStatement(SELECT_BYNUMERO)) {
+        try(PreparedStatement pStmt = dbTransaction.getOracleConnection().getCnn().prepareStatement(SELECT_BYNUMERO)) {
             pStmt.setInt(1, evaluationCriteriaNumero);
             ResultSet resultSet = pStmt.executeQuery();
             EvaluationCriteria evaluationCriteria = null;

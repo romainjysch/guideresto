@@ -12,7 +12,7 @@ import java.util.Set;
 public class DAORestaurantType {
 
     public Set<RestaurantType> findAll(DBTransaction dbTransaction) {
-        try(PreparedStatement statement = dbTransaction.getCnn().prepareStatement("SELECT NUMERO, LIBELLE, DESCRIPTION FROM TYPES_GASTRONOMIQUES");
+        try(PreparedStatement statement = dbTransaction.getOracleConnection().getCnn().prepareStatement("SELECT NUMERO, LIBELLE, DESCRIPTION FROM TYPES_GASTRONOMIQUES");
             ResultSet resultSet = statement.executeQuery()) {
             Set<RestaurantType> restaurantTypes = new HashSet<>();
             while(resultSet.next()) {
@@ -27,7 +27,7 @@ public class DAORestaurantType {
     }
 
     public RestaurantType findByNumero(DBTransaction dbTransaction, int restaurantTypeNumero) {
-        try(PreparedStatement statement = dbTransaction.getCnn().prepareStatement("SELECT NUMERO, LIBELLE, DESCRIPTION FROM TYPES_GASTRONOMIQUES WHERE NUMERO = ?")) {
+        try(PreparedStatement statement = dbTransaction.getOracleConnection().getCnn().prepareStatement("SELECT NUMERO, LIBELLE, DESCRIPTION FROM TYPES_GASTRONOMIQUES WHERE NUMERO = ?")) {
             statement.setInt(1, restaurantTypeNumero);
             try(ResultSet resultSet = statement.executeQuery()) {
                 RestaurantType restaurantType = null;
