@@ -11,7 +11,7 @@ import ch.hearc.ig.guideresto.business.EvaluationCriteria;
 import ch.hearc.ig.guideresto.business.Grade;
 import ch.hearc.ig.guideresto.business.Restaurant;
 import ch.hearc.ig.guideresto.business.RestaurantType;
-import ch.hearc.ig.guideresto.services.DBTransaction;
+import ch.hearc.ig.guideresto.services.RestaurantService;
 
 import java.io.PrintStream;
 import java.net.Inet4Address;
@@ -26,13 +26,13 @@ public class CLI {
 
   private final Scanner scanner;
   private final PrintStream printStream;
-  private final DBTransaction dbTransaction;
+  private final RestaurantService restaurantService;
 
   // Injection de dépendances
-  public CLI(Scanner scanner, PrintStream printStream, DBTransaction dbTransaction) {
+  public CLI(Scanner scanner, PrintStream printStream, RestaurantService restaurantService) {
     this.scanner = scanner;
     this.printStream = printStream;
-    this.dbTransaction = dbTransaction;
+    this.restaurantService = restaurantService;
   }
 
   public void start() {
@@ -74,7 +74,6 @@ public class CLI {
         addNewRestaurant();
         break;
       case 0:
-        dbTransaction.getOracleConnection().closeConnection();
         println("Au revoir !");
         break;
       default:
@@ -105,7 +104,7 @@ public class CLI {
   private void showRestaurantsList() {
     println("Liste des restaurants : ");
 
-    Set<Restaurant> restaurants = dbTransaction.getDaoFactory().getDaoRestaurant().findAll(dbTransaction);
+    Set<Restaurant> restaurants = restaurantService.findAllRestaurants();
 
     Optional<Restaurant> maybeRestaurant = pickRestaurant(restaurants);
     // Si l'utilisateur a choisi un restaurant, on l'affiche, sinon on ne fait rien et l'application va réafficher le menu principal
@@ -116,7 +115,7 @@ public class CLI {
     println("Veuillez entrer une partie du nom recherché : ");
     String research = readString();
 
-    Set<Restaurant> restaurants = dbTransaction.getDaoFactory().getDaoRestaurant().findAll(dbTransaction)
+    Set<Restaurant> restaurants = restaurantService.findAllRestaurants()
         .stream().filter(r -> r.getName().toLowerCase().contains(research.toLowerCase())).collect(toUnmodifiableSet());
 
     Optional<Restaurant> maybeRestaurant = pickRestaurant(restaurants);
@@ -131,7 +130,7 @@ public class CLI {
     println("Veuillez entrer une partie du nom de la ville désirée : ");
     String research = readString();
 
-    Set<Restaurant> restaurants = dbTransaction.getDaoFactory().getDaoRestaurant().findAll(dbTransaction)
+    Set<Restaurant> restaurants = restaurantService.findAllRestaurants()
         .stream()
         .filter(r -> r.getAddress().getCity().getCityName().toUpperCase().contains(research.toUpperCase()))
         .collect(toUnmodifiableSet());
@@ -155,8 +154,8 @@ public class CLI {
       println("Veuillez entrer le nom de la nouvelle ville : ");
       String cityName = readString();
       City city = new City(null, zipCode, cityName);
-      dbTransaction.getDaoFactory().getDaoCity().insert(dbTransaction, city);
-      city.setId(dbTransaction.getDaoFactory().getDaoCity().findByZipAndName(dbTransaction, city)); // Récupérer la PK qui a été attribuée en DB
+      restaurantService.insertCity(city);
+      city.setId(restaurantService.findCityByZipCodeAndName(city)); // Récupérer la PK qui a été attribuée en DB
       return city;
     }
 
@@ -179,10 +178,10 @@ public class CLI {
   }
 
   private void searchRestaurantByType() {
-    Set<RestaurantType> restaurantTypes = dbTransaction.getDaoFactory().getDaoRestaurantType().findAll(dbTransaction);
+    Set<RestaurantType> restaurantTypes = restaurantService.findAllRestaurantTypes();
     RestaurantType chosenType = pickRestaurantType(restaurantTypes);
 
-    Set<Restaurant> restaurants = dbTransaction.getDaoFactory().getDaoRestaurant().findAll(dbTransaction)
+    Set<Restaurant> restaurants = restaurantService.findAllRestaurants()
         .stream()
         .filter(r -> r.getType().getLabel().equalsIgnoreCase(chosenType.getLabel()))
         .collect(toUnmodifiableSet());
@@ -204,14 +203,14 @@ public class CLI {
     City city;
     do
     { // La sélection d'une ville est obligatoire, donc l'opération se répètera tant qu'aucune ville n'est sélectionnée.
-      Set<City> cities = dbTransaction.getDaoFactory().getDaoCity().findAll(dbTransaction);
+      Set<City> cities = restaurantService.findAllCities();
       city = pickCity(cities);
     } while (city == null);
 
     RestaurantType restaurantType;
 
     // La sélection d'un type est obligatoire, donc l'opération se répètera tant qu'aucun type n'est sélectionné.
-    Set<RestaurantType> restaurantTypes = dbTransaction.getDaoFactory().getDaoRestaurantType().findAll(dbTransaction);
+    Set<RestaurantType> restaurantTypes = restaurantService.findAllRestaurantTypes();
     restaurantType = pickRestaurantType(restaurantTypes);
 
     Restaurant restaurant = new Restaurant(null, name, description, website, street, city,
@@ -219,7 +218,7 @@ public class CLI {
     city.getRestaurants().add(restaurant);
     restaurant.getAddress().setCity(city);
 
-    int numeroRestaurant = dbTransaction.getDaoFactory().getDaoRestaurant().insert(dbTransaction, restaurant);
+    int numeroRestaurant = restaurantService.insertRestaurant(restaurant);
     restaurant.setId(numeroRestaurant);
 
     showRestaurant(restaurant);
@@ -314,7 +313,7 @@ public class CLI {
   private void addBasicEvaluation(Restaurant restaurant, Boolean like) {
     BasicEvaluation eval = new BasicEvaluation(null, LocalDate.now(), restaurant, like, getIpAddress());
     restaurant.getEvaluations().add(eval);
-    dbTransaction.getDaoFactory().getDaoBasicEvaluation().insert(dbTransaction, eval);
+    restaurantService.insertBasicEvaluation(eval);
     println("Votre vote a été pris en compte !");
   }
 
@@ -337,11 +336,12 @@ public class CLI {
         username);
     restaurant.getEvaluations().add(eval);
 
-    int numeroEval = dbTransaction.getDaoFactory().getDaoCompleteEvaluation().insert(dbTransaction, eval);
+    // Tout devrait se faire dans insertCompleteEvaluation dans une seule transaction!!
+    int numeroEval = restaurantService.insertCompleteEvaluation(eval);
 
     println("Veuillez svp donner une note entre 1 et 5 pour chacun de ces critères : ");
 
-    Set<EvaluationCriteria> evaluationCriterias = dbTransaction.getDaoFactory().getDaoEvaluationCriteria().findAll(dbTransaction);
+    Set<EvaluationCriteria> evaluationCriterias = restaurantService.findAllEvaluationCriterias();
 
     evaluationCriterias.forEach(currentCriteria -> {
       println(currentCriteria.getName() + " : " + currentCriteria.getDescription());
@@ -349,7 +349,7 @@ public class CLI {
       eval.setId(numeroEval);
       Grade grade = new Grade(null, note, eval, currentCriteria);
       eval.getGrades().add(grade);
-      dbTransaction.getDaoFactory().getDaoGrade().insert(dbTransaction, grade);
+      restaurantService.insertGrade(grade);
     });
 
     println("Votre évaluation a bien été enregistrée, merci !");
@@ -367,7 +367,7 @@ public class CLI {
     restaurant.setWebsite(readString());
     println("Nouveau type de restaurant : ");
 
-    Set<RestaurantType> restaurantTypes = dbTransaction.getDaoFactory().getDaoRestaurantType().findAll(dbTransaction);
+    Set<RestaurantType> restaurantTypes = restaurantService.findAllRestaurantTypes();
 
     RestaurantType newType = pickRestaurantType(restaurantTypes);
     if (newType != restaurant.getType()) {
@@ -376,7 +376,7 @@ public class CLI {
       restaurant.setType(newType);
     }
 
-    dbTransaction.getDaoFactory().getDaoRestaurant().update(dbTransaction, restaurant);
+    restaurantService.updateRestaurant(restaurant);
 
     println("Merci, le restaurant a bien été modifié !");
   }
@@ -387,7 +387,7 @@ public class CLI {
     println("Nouvelle rue : ");
     restaurant.getAddress().setStreet(readString());
 
-    Set<City> cities = dbTransaction.getDaoFactory().getDaoCity().findAll(dbTransaction);
+    Set<City> cities = restaurantService.findAllCities();
 
     City newCity = pickCity(cities);
     if (!newCity.equals(restaurant.getAddress().getCity())) {
@@ -396,7 +396,7 @@ public class CLI {
       restaurant.getAddress().setCity(newCity);
     }
 
-    dbTransaction.getDaoFactory().getDaoRestaurant().update(dbTransaction, restaurant);
+    restaurantService.updateRestaurant(restaurant);
 
     println("L'adresse a bien été modifiée ! Merci !");
   }
@@ -407,7 +407,7 @@ public class CLI {
     if ("o".equalsIgnoreCase(choice)) {
       restaurant.getAddress().getCity().getRestaurants().remove(restaurant);
       restaurant.getType().getRestaurants().remove(restaurant);
-      dbTransaction.getDaoFactory().getDaoRestaurant().delete(dbTransaction, restaurant);
+      restaurantService.deleteRestaurant(restaurant);
       println("Le restaurant a bien été supprimé !");
     }
   }

@@ -1,8 +1,8 @@
 package ch.hearc.ig.guideresto.persistence;
 
 import ch.hearc.ig.guideresto.business.EvaluationCriteria;
-import ch.hearc.ig.guideresto.services.DBTransaction;
 
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -14,9 +14,10 @@ public class DAOEvaluationCriteria {
     private static final String SELECT_ALL = "SELECT NUMERO, NOM, DESCRIPTION FROM CRITERES_EVALUATION";
     private static final String SELECT_BYNUMERO = "SELECT NUMERO, NOM, DESCRIPTION FROM CRITERES_EVALUATION WHERE NUMERO = ?";
 
-    public Set<EvaluationCriteria> findAll(DBTransaction dbTransaction) {
-        try(PreparedStatement pStmt = dbTransaction.getOracleConnection().getCnn().prepareStatement(SELECT_ALL)) {
-            ResultSet resultSet = pStmt.executeQuery();
+    public Set<EvaluationCriteria> findAll(Connection connection) {
+        try(PreparedStatement pStmt = connection.prepareStatement(SELECT_ALL);
+            ResultSet resultSet = pStmt.executeQuery();) {
+
             Set<EvaluationCriteria> evaluationCriterias = new HashSet<>();
             while(resultSet.next()) {
                 evaluationCriterias.add(new EvaluationCriteria(
@@ -25,27 +26,25 @@ public class DAOEvaluationCriteria {
                         resultSet.getString("DESCRIPTION")
                 ));
             }
-            resultSet.close();
             return evaluationCriterias;
         } catch(SQLException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public EvaluationCriteria findByNumero(DBTransaction dbTransaction, int evaluationCriteriaNumero) {
-        try(PreparedStatement pStmt = dbTransaction.getOracleConnection().getCnn().prepareStatement(SELECT_BYNUMERO)) {
+    public EvaluationCriteria findByNumero(Connection connection, int evaluationCriteriaNumero) {
+        try(PreparedStatement pStmt = connection.prepareStatement(SELECT_BYNUMERO)) {
             pStmt.setInt(1, evaluationCriteriaNumero);
-            ResultSet resultSet = pStmt.executeQuery();
-            EvaluationCriteria evaluationCriteria = null;
-            while(resultSet.next()) {
-                evaluationCriteria = new EvaluationCriteria(
+            try(ResultSet resultSet = pStmt.executeQuery()) {
+                if (resultSet.next()) {
+                    return new EvaluationCriteria(
                         resultSet.getInt("NUMERO"),
                         resultSet.getString("NOM"),
                         resultSet.getString("DESCRIPTION")
-                );
+                    );
+                }
+                return null;
             }
-            resultSet.close();
-            return evaluationCriteria;
         } catch(SQLException e) {
             throw new RuntimeException(e);
         }

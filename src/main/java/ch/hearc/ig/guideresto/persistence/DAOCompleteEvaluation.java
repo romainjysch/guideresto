@@ -1,7 +1,6 @@
 package ch.hearc.ig.guideresto.persistence;
 
 import ch.hearc.ig.guideresto.business.*;
-import ch.hearc.ig.guideresto.services.DBTransaction;
 import oracle.jdbc.OraclePreparedStatement;
 import oracle.jdbc.OracleTypes;
 
@@ -20,36 +19,36 @@ public class DAOCompleteEvaluation {
         this.daoGrade = daoGrade;
     }
 
-    public Set<Evaluation> findByNumeroRestaurant(DBTransaction dbTransaction, Restaurant restaurant) {
-        try (PreparedStatement pStmt = dbTransaction.getOracleConnection().getCnn().prepareStatement(SELECT_BY_NUMERORESTAURANT)) {
+    public Set<Evaluation> findByNumeroRestaurant(Connection connection, Restaurant restaurant) {
+        try (PreparedStatement pStmt = connection.prepareStatement(SELECT_BY_NUMERORESTAURANT)) {
             pStmt.setInt(1, restaurant.getId());
-            ResultSet resultSet = pStmt.executeQuery();
-            Set<Evaluation> evaluations = new HashSet<>();
-            while (resultSet.next()) {
-                CompleteEvaluation evaluation = new CompleteEvaluation(
+            try(ResultSet resultSet = pStmt.executeQuery()) {
+                Set<Evaluation> evaluations = new HashSet<>();
+                while (resultSet.next()) {
+                    CompleteEvaluation evaluation = new CompleteEvaluation(
                         resultSet.getInt("NUMERO"), resultSet.getDate("DATE_EVAL").toLocalDate(),
                         restaurant,
                         resultSet.getString("COMMENTAIRE"),
                         resultSet.getString("NOM_UTILISATEUR")
-                );
-                evaluation.getGrades().addAll(dbTransaction.getDaoFactory().getDaoGrade().findByNumeroEvaluation(dbTransaction, evaluation));
-                evaluations.add(evaluation);
+                    );
+                    evaluation.getGrades()
+                        .addAll(daoGrade.findByNumeroEvaluation(connection, evaluation));
+                    evaluations.add(evaluation);
+                }
+                return evaluations;
             }
-            resultSet.close();
-            return evaluations;
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public int insert(DBTransaction dbTransaction, CompleteEvaluation eval) {
-        try {
-            return dbTransaction.functionTransaction(cnn -> {
-                try (OraclePreparedStatement pStmt = (OraclePreparedStatement) dbTransaction.getOracleConnection().getCnn().prepareStatement(INSERT_INTO_COMMENTAIRES)) {
+    public int insert(Connection connection, CompleteEvaluation eval) {
+        try (OraclePreparedStatement pStmt = (OraclePreparedStatement) connection.prepareStatement(INSERT_INTO_COMMENTAIRES)) {
                     pStmt.setDate(1, Date.valueOf(eval.getVisitDate()));
                     pStmt.setString(2, eval.getComment());
                     pStmt.setString(3, eval.getUsername());
                     pStmt.setInt(4, eval.getRestaurant().getId());
+                    // Tu peux utiliser ceci plutôt : pStmt.getGeneratedKeys();
                     pStmt.registerReturnParameter(5, OracleTypes.NUMBER);
                     pStmt.executeUpdate();
                     ResultSet rs = null;
@@ -61,21 +60,15 @@ public class DAOCompleteEvaluation {
                 } catch (SQLException e) {
                     throw new RuntimeException(e);
                 }
-            });
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
     }
 
-    public void delete(DBTransaction dbTransaction, Restaurant restaurant) {
-        dbTransaction.consumerTransaction(cnn -> {
-            try (PreparedStatement pStmt = dbTransaction.getOracleConnection().getCnn().prepareStatement("DELETE FROM COMMENTAIRES WHERE FK_REST = ?")) {
-                pStmt.setInt(1, restaurant.getId());
-                pStmt.executeUpdate();
-            } catch(SQLException e) {
-                throw new RuntimeException(e);
-            }
-        });
+    public void delete(Connection connnection, Restaurant restaurant) {
+        try (PreparedStatement pStmt = connnection.prepareStatement("DELETE FROM COMMENTAIRES WHERE FK_REST = ?")) {
+            pStmt.setInt(1, restaurant.getId());
+            pStmt.executeUpdate();
+        } catch(SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 }
