@@ -14,6 +14,10 @@ public class DBTransaction {
     private static final String DBPWD = "romain_jysch";
     private final Connection connection;
 
+    public DBTransaction() {
+        this.connection = openConnection();
+    }
+
     private Connection openConnection() {
         try {
             Connection cnn = DriverManager.getConnection(DBURL, DBUSER, DBPWD);
@@ -25,8 +29,12 @@ public class DBTransaction {
         }
     }
 
-    public DBTransaction() {
-        this.connection = openConnection();
+    public void closeConnection() {
+        try {
+            connection.close();
+        } catch (SQLException exCloseConnection) {
+            throw new RuntimeException(exCloseConnection);
+        }
     }
 
     public <T> T functionTransaction(Function<Connection, T> function) {
@@ -45,7 +53,6 @@ public class DBTransaction {
     }
 
     public void consumerTransaction(Consumer<Connection> function) {
-        Connection connection = openConnection();
         try {
             function.accept(connection);
             connection.commit();

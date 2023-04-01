@@ -66,4 +66,9 @@ public class RestaurantService {
     public void updateRestaurant(Restaurant restaurant) {
         dbTransaction.consumerTransaction(connection -> daoFactory.getDaoRestaurant().update(connection, restaurant));
     }
+
+    public void closeConnection() {
+        dbTransaction.closeConnection();
+    }
+
 }

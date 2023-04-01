@@ -74,6 +74,7 @@ public class CLI {
         addNewRestaurant();
         break;
       case 0:
+        restaurantService.closeConnection();
         println("Au revoir !");
         break;
       default:
