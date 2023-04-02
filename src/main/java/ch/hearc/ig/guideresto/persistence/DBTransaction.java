@@ -7,7 +7,7 @@ import java.util.function.Consumer;
 import java.sql.Connection;
 import java.util.function.Function;
 
-public class DBTransaction {
+public class DBTransaction implements AutoCloseable {
 
     private static final String DBURL = "jdbc:oracle:thin:@db.ig.he-arc.ch:1521:ens";
     private static final String DBUSER = "romain_jysch";
@@ -26,14 +26,6 @@ public class DBTransaction {
             return cnn;
         } catch (SQLException exOpenConnection) {
             throw new RuntimeException(exOpenConnection);
-        }
-    }
-
-    public void closeConnection() {
-        try {
-            connection.close();
-        } catch (SQLException exCloseConnection) {
-            throw new RuntimeException(exCloseConnection);
         }
     }
 
@@ -66,4 +58,12 @@ public class DBTransaction {
         }
     }
 
+    @Override
+    public void close() {
+        try {
+            connection.close();
+        } catch (SQLException exCloseConnection) {
+            throw new RuntimeException(exCloseConnection);
+        }
+    }
 }
